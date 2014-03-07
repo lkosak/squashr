@@ -53,4 +53,12 @@ describe Reservation do
       result.should be_nil
     end
   end
+
+  describe "#cancel!" do
+    it "sets deleted_at" do
+      reservation = Reservation.create(user_id: 2, start_time: valid_start_time)
+      reservation.cancel!
+      reservation.reload.deleted_at.should_not be_nil
+    end
+  end
 end

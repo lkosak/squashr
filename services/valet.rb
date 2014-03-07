@@ -4,29 +4,40 @@ class Valet
   class BookingFailed < Error; end
   class CancelFailed < Error; end
 
+  VALID_ACTIONS = [:book, :cancel]
+
   def initialize(user, instruction)
     @user = user
     @instruction = instruction
   end
 
   def run
-    case @instruction.action
-    when :book
-      reservation = Reservation.create!(user_id: @user.id,
-                                        start_time: @instruction.start_time,
-                                        status: Reservation::STATUS_PENDING)
+    unless VALID_ACTIONS.include?(@instruction.action)
+      raise "Invalid action specified: #{@instruction.action}"
+    end
 
-      unless reservation.valid?
-        raise BookingFailed, reservation.errors
-      end
-    when :cancel
-      reservation = Reservation.find_by_start_time(@user.id, @instruction.start_time)
-      raise ReservationNotFound unless reservation
-      reservation.deleted_at = Time.now
+    self.send(@instruction.action)
+  end
 
-      unless reservation.save
-        raise CancelFailed, reservation.errors
-      end
+  private
+
+  def book
+    reservation = Reservation.create!(user_id: @user.id,
+                                      start_time: @instruction.start_time)
+
+    unless reservation.saved?
+      raise BookingFailed, reservation.errors
+    end
+  end
+
+  def cancel
+    reservation = Reservation.find_by_start_time(@user.id, @instruction.start_time)
+    raise ReservationNotFound unless reservation
+
+    begin
+      reservation.cancel!
+    rescue => e
+      raise CancelFailed, "#{e}: #{e.message}"
     end
   end
 end

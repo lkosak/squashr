@@ -12,6 +12,8 @@ gem 'dm-validations'
 gem 'dm-aggregates'
 gem 'dm-pager'
 gem 'active_support'
+gem "tzinfo" # required for ActiveSupport timezone support
+gem 'mechanize'
 
 group :development do
   gem 'shotgun'
@@ -26,6 +28,7 @@ end
 group :test do
   gem 'rspec'
   gem 'database_cleaner'
+  gem 'rack-test'
 end
 
 group :production do

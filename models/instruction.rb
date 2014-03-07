@@ -4,8 +4,8 @@ class Instruction
 
   def initialize(string)
     matches = string.match(/^([a-zA-Z]+?)\s(.*?)$/)
-    @action = parse_action(matches[0])
-    @start_time = parse_time(matches[1])
+    @action = parse_action(matches[1])
+    @start_time = parse_time(matches[2])
   end
 
   private
@@ -19,9 +19,12 @@ class Instruction
   end
 
   def parse_time(string)
-    Chronic.parse(string)
+    time = Chronic.parse(string)
+    raise TimeParsingFailed if time.nil?
+    time
   end
 
   class Error < StandardError; end
-  class InvalidAction < Error;
+  class InvalidAction < Error; end
+  class TimeParsingFailed < Error; end
 end

@@ -1,4 +1,4 @@
-require File.join(APPROOT, 'services', 'scheduler')
+require 'services/scheduler'
 
 class Reservation
   include DataMapper::Resource
@@ -49,6 +49,21 @@ class Reservation
     self.status ||= STATUS_PENDING
   end
 
+  def self.find_by_start_time(user_id, start_time)
+    self.first(user_id: user_id, start_time: start_time)
+  end
+
+  def self.pending
+    self.all(status: STATUS_PENDING)
+  end
+
+  def cancel!
+    self.deleted_at = Time.now
+    self.save!
+  end
+
+  private
+
   def validate_start_time
     if self.start_time.nil?
       return [false, "Start time is required"]
@@ -67,9 +82,5 @@ class Reservation
     end
 
     true
-  end
-
-  def self.find_by_start_time(user_id, start_time)
-    self.first(user_id: user_id, start_time: start_time)
   end
 end
