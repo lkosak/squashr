@@ -1,12 +1,13 @@
-require 'scheduler'
+require File.join(APPROOT, 'services', 'scheduler')
 
 class Reservation
   include DataMapper::Resource
 
   STATUS_PENDING = 'pending'
   STATUS_BOOKED = 'booked'
+  STATUSES = [STATUS_PENDING, STATUS_BOOKED]
 
-  START_TIMES = %w{
+  VALID_START_TIMES = %w{
     05:00
     05:30
     06:00
@@ -41,25 +42,34 @@ class Reservation
   property :deleted_at, DateTime
 
   validates_with_method :validate_start_time
+  validates_with_method :validate_status
+
+  def initialize(*args)
+    super
+    self.status ||= STATUS_PENDING
+  end
 
   def validate_start_time
     if self.start_time.nil?
-      return [false, "Start time is required"}
+      return [false, "Start time is required"]
     end
 
-    if self.start_time.sec != 0 || self.start_time.usec != 0
-      return [false, "Start time can't contain seconds"]
-    end
-
-    if START_TIMES.include?(self.start_time.strftime("%H:%M")
+    unless VALID_START_TIMES.include?(self.start_time.strftime("%H:%M"))
       return [false, "Invalid start time specified"]
     end
 
     true
   end
 
+  def validate_status
+    unless STATUSES.include?(self.status)
+      return [false, "Invalid status specified"]
+    end
+
+    true
+  end
+
   def self.find_by_start_time(user_id, start_time)
-    self.find(user_id: user_id, start_time: start_time)
+    self.first(user_id: user_id, start_time: start_time)
   end
 end
-

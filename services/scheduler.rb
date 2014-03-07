@@ -1,4 +1,4 @@
-require 'active_support/core_ext/date'
+require 'active_support/core_ext/date/calculations'
 
 class Scheduler
   def self.currently_bookable?(start_time)

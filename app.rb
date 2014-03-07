@@ -3,13 +3,15 @@ require 'data_mapper'
 require 'json'
 require 'chronic'
 
-require 'models/user'
-require 'models/reservation'
+APPROOT = File.expand_path(File.dirname(__FILE__))
+
+require_relative 'models/user'
+require_relative 'models/reservation'
 
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/dev.db")
 DataMapper.finalize.auto_upgrade!
 
-class Squashr
+class Squashr < Sinatra::Base
   APP_URL = "http://squashr.com"
 
   get '/receiver' do
